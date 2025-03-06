@@ -3,6 +3,6 @@ version: 2
 sources:
   - name: raw
     database: raw  
-    schema: raw  
+    schema: zoomcamp-project-452302  
     tables:
       - name: drivers
