@@ -1,0 +1,55 @@
+id: 04-teams-ingestion
+namespace: zoomcamp-project
+description: Ingest teams data, scheduled to run once every month
+
+tasks:
+  - id: ingest_teams_data
+    type: io.kestra.plugin.scripts.python.Script
+    runner: PROCESS
+    env:
+      DESTINATION__BIGQUERY__CREDENTIALS: "{{ kv('GCP_CREDS') }}"
+
+    script: |
+      import dlt
+      import requests
+      import datetime
+
+      @dlt.resource(name="teams", primary_key="teamId", write_disposition="replace")
+      def teams():
+        base_url = "https://f1api.dev/api/teams"
+        offset = 0
+        limit = 100
+        data_path = "teams"
+
+        while True:
+            # Get data from the API
+            response = requests.get(f"{base_url}?offset={offset}&limit={limit}")
+            
+            # Check if we received a 404 - this means we've gone beyond available data
+            if response.status_code == 404:
+              break
+                
+            data = response.json()
+
+            if data_path in data and data[data_path]:
+              yield data[data_path]
+            else:
+              # No data means we're done
+              break
+            
+            offset += limit
+
+      pipeline = dlt.pipeline(
+          pipeline_name="f1_drivers_pipeline",
+          destination="bigquery",
+          dataset_name="{{ kv('DATASET_NAME') }}",
+          dev_mode=False,
+      )
+      
+      load_info = pipeline.run(teams)
+      print(load_info)
+
+triggers:
+- id: schedule
+  type: io.kestra.plugin.core.trigger.Schedule
+  cron: "@weekly"
