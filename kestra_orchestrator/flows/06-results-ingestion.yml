@@ -1,0 +1,280 @@
+id: 06-results-ingestion
+namespace: zoomcamp-project
+description: Ingest results data by year, scheduled to run once every week
+
+inputs:
+  - id: isBackfillAll
+    type: BOOLEAN
+    defaults: false
+
+variables:
+  date: "{{ trigger.date | date('yyyy') | default('2024') }}"
+  start_year: "{{ inputs.start_year | date('yyyy') | default('2020') }}"
+  end_year: "{{ inputs.end_year | date('yyyy') | default('2025') }}"
+  
+tasks:
+  - id: conditional_branch
+    type: io.kestra.core.tasks.flows.Switch
+    value: "{{ inputs.isBackfillAll }}"
+    cases:
+        "true":
+            - id: backfill_all_results_data
+              type: io.kestra.plugin.scripts.python.Script
+              runner: PROCESS
+              env:
+                DESTINATION__BIGQUERY__CREDENTIALS: "{{ kv('GCP_CREDS') }}"
+
+              script: |
+                import dlt
+                import requests
+                import datetime
+
+                def fetch_race_results(year, race_type, race_variant=None):
+                    """
+                    Generic function to fetch race results for a specific type and round.
+                    
+                    Args:
+                        year (str): Year of the race
+                        round_number (int): Race round number
+                        race_type (str): Type of race results (fp1, fp2, fp3, qualy)
+                        race_variant (str, optional): Variant of the race (e.g., 'sprint')
+                    
+                    Yields:
+                        dict: Processed race result records
+                    """
+                    base_url = "https://f1api.dev/api"
+                    
+                    # Mapping of race types to API-specific parameters
+                    race_config = {
+                        'fp1': {'race_type': 'fp1', 'data_path': 'races', 'records': 'fp1Results'},
+                        'fp2': {'race_type': 'fp2', 'data_path': 'races', 'records': 'fp2Results'},
+                        'fp3': {'race_type': 'fp3', 'data_path': 'races', 'records': 'fp3Results'},
+                        'qualy': {'race_type': 'qualy', 'data_path': 'races', 'records': 'qualyResults'},
+                        'race': {'race_type': 'race', 'data_path': 'races', 'records': 'results'},
+                        'sprint_qualy': {'race_type': 'qualy', 'data_path': 'races', 'records': 'sprintQualyResults'},
+                        'sprint_race': {'race_type': 'race', 'data_path': 'races', 'records': 'sprintRaceResults'},
+                    }
+                    
+                    # Validate race type
+                    if race_type not in race_config:
+                        raise ValueError(f"Invalid race type: {race_type}")
+                    
+                    config = race_config[race_type]
+
+                    race_type = race_config[race_type]['race_type']
+                    
+                    for round_number in range(1, 31):
+                        try:
+                            # Construct URL with optional race variant
+                            url = (f"{base_url}/{year}/{round_number}"
+                                f"{'/' + race_variant if race_variant else ''}/{race_type}")
+                            print(url)
+                            
+                            response = requests.get(url)
+                            data = response.json()
+                            
+                            # Check for 404 or empty data
+                            if data.get('status') == 404 or not data.get(config['data_path']):
+                                continue
+                            
+                            race_id = data['races']['raceId']
+                            
+                            # Yield results with race ID
+                            for record in data[config['data_path']][config['records']]:
+                                yield {
+                                    'raceId': race_id,
+                                    **record
+                                }
+                        
+                        except Exception as e:
+                            print(f"Error fetching {race_type} results for round {round_number}: {e}")
+
+                # Create DLT resources using generator functions
+                @dlt.resource(name="fp1_results", primary_key="raceId", write_disposition="replace")
+                def fp1_results():
+                    for year in range({{ vars.start_year }}, {{ vars.end_year }}):
+                        yield fetch_race_results(year, 'fp1')
+
+                @dlt.resource(name="fp2_results", primary_key="raceId", write_disposition="replace")
+                def fp2_results():
+                    for year in range({{ vars.start_year }}, {{ vars.end_year }}):
+                        yield fetch_race_results(year, 'fp2')
+
+                @dlt.resource(name="fp3_results", primary_key="raceId", write_disposition="replace")
+                def fp3_results():
+                    for year in range({{ vars.start_year }}, {{ vars.end_year }}):
+                        yield fetch_race_results(year, 'fp3')
+
+                @dlt.resource(name="qualy_results", primary_key="raceId", write_disposition="replace")
+                def qualy_results():
+                    for year in range({{ vars.start_year }}, {{ vars.end_year }}):
+                        yield fetch_race_results(year, 'qualy')
+
+                @dlt.resource(name="race_results", primary_key="raceId", write_disposition="replace")
+                def race_results():
+                    for year in range({{ vars.start_year }}, {{ vars.end_year }}):
+                        yield fetch_race_results(year, 'race')
+
+                @dlt.resource(name="sprint_qualy_results", primary_key="raceId", write_disposition="replace")
+                def sprint_qualy_results():
+                    for year in range({{ vars.start_year }}, {{ vars.end_year }}):
+                        yield fetch_race_results(year, 'sprint_qualy', race_variant='sprint')
+
+                @dlt.resource(name="sprint_race_results", primary_key="raceId", write_disposition="replace")
+                def sprint_race_results():
+                    for year in range({{ vars.start_year }}, {{ vars.end_year }}):
+                        yield fetch_race_results(year, 'sprint_race', race_variant='sprint')
+
+                # Pipeline setup remains the same
+                pipeline = dlt.pipeline(
+                    pipeline_name="f1_drivers_pipeline",
+                    destination="bigquery",
+                    dataset_name="{{ kv('DATASET_NAME') }}",
+                    dev_mode=False,
+                )
+
+                load_info = pipeline.run([
+                    fp1_results, 
+                    fp2_results, 
+                    fp3_results, 
+                    qualy_results, 
+                    race_results,
+                    sprint_qualy_results,
+                    sprint_race_results
+                ])
+                print(load_info)
+
+
+    
+        "false":
+            - id: ingest_results_data
+              type: io.kestra.plugin.scripts.python.Script
+              runner: PROCESS
+              env:
+                DESTINATION__BIGQUERY__CREDENTIALS: "{{ kv('GCP_CREDS') }}"
+
+              script: |
+                    import dlt
+                    import requests
+                    import datetime
+
+                    def fetch_race_results(year, race_type, race_variant=None):
+                        """
+                        Generic function to fetch race results for a specific type and round.
+                        
+                        Args:
+                            year (str): Year of the race
+                            round_number (int): Race round number
+                            race_type (str): Type of race results (fp1, fp2, fp3, qualy)
+                            race_variant (str, optional): Variant of the race (e.g., 'sprint')
+                        
+                        Yields:
+                            dict: Processed race result records
+                        """
+                        base_url = "https://f1api.dev/api"
+                        
+                        # Mapping of race types to API-specific parameters
+                        race_config = {
+                            'fp1': {'race_type': 'fp1', 'data_path': 'races', 'records': 'fp1Results'},
+                            'fp2': {'race_type': 'fp2', 'data_path': 'races', 'records': 'fp2Results'},
+                            'fp3': {'race_type': 'fp3', 'data_path': 'races', 'records': 'fp3Results'},
+                            'qualy': {'race_type': 'qualy', 'data_path': 'races', 'records': 'qualyResults'},
+                            'race': {'race_type': 'race', 'data_path': 'races', 'records': 'results'},
+                            'sprint_qualy': {'race_type': 'qualy', 'data_path': 'races', 'records': 'sprintQualyResults'},
+                            'sprint_race': {'race_type': 'race', 'data_path': 'races', 'records': 'sprintRaceResults'},
+                        }
+                        
+                        # Validate race type
+                        if race_type not in race_config:
+                            raise ValueError(f"Invalid race type: {race_type}")
+                        
+                        config = race_config[race_type]
+
+                        race_type = race_config[race_type]['race_type']
+                        
+                        for round_number in range(1, 31):
+                            try:
+                                # Construct URL with optional race variant
+                                url = (f"{base_url}/{year}/{round_number}"
+                                    f"{'/' + race_variant if race_variant else ''}/{race_type}")
+                                print(url)
+                                
+                                response = requests.get(url)
+                                data = response.json()
+                                
+                                # Check for 404 or empty data
+                                if data.get('status') == 404 or not data.get(config['data_path']):
+                                    continue
+                                
+                                race_id = data['races']['raceId']
+                                
+                                # Yield results with race ID
+                                for record in data[config['data_path']][config['records']]:
+                                    yield {
+                                        'raceId': race_id,
+                                        **record
+                                    }
+                            
+                            except Exception as e:
+                                print(f"Error fetching {race_type} results for round {round_number}: {e}")
+
+                    # Create DLT resources using generator functions
+                    @dlt.resource(name="fp1_results", primary_key="raceId", write_disposition="replace")
+                    def fp1_results():
+                        year = "{{ render(vars.date) }}"
+                        return fetch_race_results(year, 'fp1')
+
+                    @dlt.resource(name="fp2_results", primary_key="raceId", write_disposition="replace")
+                    def fp2_results():
+                        year = "{{ render(vars.date) }}"
+                        return fetch_race_results(year, 'fp2')
+
+                    @dlt.resource(name="fp3_results", primary_key="raceId", write_disposition="replace")
+                    def fp3_results():
+                        year = "{{ render(vars.date) }}"
+                        return fetch_race_results(year, 'fp3')
+
+                    @dlt.resource(name="qualy_results", primary_key="raceId", write_disposition="replace")
+                    def qualy_results():
+                        year = "{{ render(vars.date) }}"
+                        return fetch_race_results(year, 'qualy')
+
+                    @dlt.resource(name="race_results", primary_key="raceId", write_disposition="replace")
+                    def race_results():
+                        year = "{{ render(vars.date) }}"
+                        return fetch_race_results(year, 'race')
+
+                    @dlt.resource(name="sprint_qualy_results", primary_key="raceId", write_disposition="replace")
+                    def sprint_qualy_results():
+                        year = "{{ render(vars.date) }}"
+                        return fetch_race_results(year, 'sprint_qualy', race_variant='sprint')
+
+                    @dlt.resource(name="sprint_race_results", primary_key="raceId", write_disposition="replace")
+                    def sprint_race_results():
+                        year = "{{ render(vars.date) }}"
+                        return fetch_race_results(year, 'sprint_race', race_variant='sprint')
+
+                    # Pipeline setup remains the same
+                    pipeline = dlt.pipeline(
+                        pipeline_name="f1_drivers_pipeline",
+                        destination="bigquery",
+                        dataset_name="{{ kv('DATASET_NAME') }}",
+                        dev_mode=False,
+                    )
+
+                    load_info = pipeline.run([
+                        fp1_results, 
+                        fp2_results, 
+                        fp3_results, 
+                        qualy_results, 
+                        race_results,
+                        sprint_qualy_results,
+                        sprint_race_results
+                    ])
+                    print(load_info)
+
+
+triggers:
+- id: schedule
+  type: io.kestra.plugin.core.trigger.Schedule
+  cron: "@daily"
