@@ -1,0 +1,55 @@
+id: 03-seasons-ingestion
+namespace: zoomcamp-project
+description: Ingest seasons data, scheduled to run every month
+
+tasks:
+  - id: ingest_seasons_data
+    type: io.kestra.plugin.scripts.python.Script
+    runner: PROCESS
+    env:
+      DESTINATION__BIGQUERY__CREDENTIALS: "{{ kv('GCP_CREDS') }}"
+
+    script: |
+      import dlt
+      import requests
+      import datetime
+
+      @dlt.resource(name="seasons", primary_key="championshipId", write_disposition="replace")
+      def seasons():
+        base_url = "https://f1api.dev/api/seasons"
+        offset = 0
+        limit = 100
+        data_path = "championships"
+
+        while True:
+            # Get data from the API
+            response = requests.get(f"{base_url}?offset={offset}&limit={limit}")
+            
+            # Check if we received a 404 - this means we've gone beyond available data
+            if response.status_code == 404:
+              break
+                
+            data = response.json()
+
+            if data_path in data and data[data_path]:
+              yield data[data_path]
+            else:
+              # No data means we're done
+              break
+            
+            offset += limit
+
+      pipeline = dlt.pipeline(
+          pipeline_name="f1_drivers_pipeline",
+          destination="bigquery",
+          dataset_name="{{ kv('DATASET_NAME') }}",
+          dev_mode=False,
+      )
+
+      load_info = pipeline.run(seasons)
+      print(load_info)
+
+triggers:
+- id: schedule
+  type: io.kestra.plugin.core.trigger.Schedule
+  cron: "@weekly"

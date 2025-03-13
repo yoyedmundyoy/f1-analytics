@@ -1,0 +1,136 @@
+id: 07-standings-ingestion
+namespace: zoomcamp-project
+description: Ingest standings data by year, scheduled to run once every week
+
+
+inputs:
+  - id: isBackfillAll
+    type: BOOLEAN
+    defaults: false
+
+variables:
+  date: "{{ trigger.date | date('yyyy') | default('2024') }}"
+  start_year: "{{ inputs.start_year | date('yyyy') | default('2020') }}"
+  end_year: "{{ inputs.end_year | date('yyyy') | default('2025') }}"
+
+tasks:
+  - id: conditional_branch
+    type: io.kestra.core.tasks.flows.Switch
+    value: "{{ inputs.isBackfillAll }}"
+    cases:
+        "true":
+          - id: backfill_all_standings_data
+            type: io.kestra.plugin.scripts.python.Script
+            runner: PROCESS
+            env:
+              DESTINATION__BIGQUERY__CREDENTIALS: "{{ kv('GCP_CREDS') }}"
+
+            script: |
+              import dlt
+              import requests
+              import datetime
+
+
+              def fetch_standings(year, championship_type):
+                base_url = "https://f1api.dev/api"
+
+                url = (f"{base_url}/{year}/{championship_type}-championship")
+
+                response = requests.get(url)
+                data = response.json()
+
+                try:
+                  data_to_yield = f"{championship_type}_championship"
+                  transformed_data = [{'championshipId': data['championshipId'], **record} for record in data[data_to_yield]]
+                  yield transformed_data
+                except Exception as e:
+                  print(f"Error fetching {championship_type} results for {year}: {e}")
+
+              @dlt.resource(
+                name="constructors_standings",
+                write_disposition={"disposition": "replace"}
+              )
+              def constructors_standings():
+                for year in range({{ vars.start_year }}, {{ vars.end_year }}):
+                  yield fetch_standings(year, "constructors")
+
+              @dlt.resource(
+                name="drivers_standings",
+                merge_key=["championshipId", "driverId"],
+                write_disposition={"disposition": "merge", "strategy": "scd2"}
+              )
+              def drivers_standings():
+                year = "2024"
+                return fetch_standings(year, "drivers")
+
+              pipeline = dlt.pipeline(
+                pipeline_name="f1_drivers_pipeline",
+                destination="bigquery",
+                dataset_name="{{ kv('DATASET_NAME') }}",
+                dev_mode=False,
+              )
+
+              load_info = pipeline.run([constructors_standings, drivers_standings])
+              print(load_info)
+
+        "false":
+          - id: ingest_standings_data
+            type: io.kestra.plugin.scripts.python.Script
+            runner: PROCESS
+            env:
+              DESTINATION__BIGQUERY__CREDENTIALS: "{{ kv('GCP_CREDS') }}"
+
+            script: |
+              import dlt
+              import requests
+              import datetime
+
+
+              def fetch_standings(year, championship_type):
+                base_url = "https://f1api.dev/api"
+
+                url = (f"{base_url}/{year}/{championship_type}-championship")
+
+                response = requests.get(url)
+                data = response.json()
+
+                try:
+                  data_to_yield = f"{championship_type}_championship"
+                  transformed_data = [{'championshipId': data['championshipId'], **record} for record in data[data_to_yield]]
+                  yield transformed_data
+                except Exception as e:
+                  print(f"Error fetching {championship_type} results for {year}: {e}")
+
+              @dlt.resource(
+                name="constructors_standings",
+                merge_key=["championshipId", "teamId"],
+                write_disposition={"disposition": "merge", "strategy": "scd2"}
+              )
+              def constructors_standings():
+                year = {{ render(vars.date) }}
+                return fetch_standings(year, "constructors")
+
+              @dlt.resource(
+                name="drivers_standings",
+                merge_key=["championshipId", "driverId"],
+                write_disposition={"disposition": "merge", "strategy": "scd2"}
+              )
+              def drivers_standings():
+                year = "2024"
+                return fetch_standings(year, "drivers")
+
+              pipeline = dlt.pipeline(
+                pipeline_name="f1_drivers_pipeline",
+                destination="bigquery",
+                dataset_name="{{ kv('DATASET_NAME') }}",
+                dev_mode=False,
+              )
+
+              load_info = pipeline.run([constructors_standings, drivers_standings])
+              print(load_info)
+
+
+triggers:
+- id: schedule
+  type: io.kestra.plugin.core.trigger.Schedule
+  cron: "@daily"
