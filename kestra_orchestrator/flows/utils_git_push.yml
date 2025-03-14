@@ -9,7 +9,7 @@ tasks:
     branch: dev
     sourceNamespace: zoomcamp-project 
     targetNamespace: zoomcamp-project
-    gitDirectory: kestra_orchestrator/flows/main
+    gitDirectory: kestra_orchestrator/flows
     commitMessage: "kestra pushflows"
     dryRun: false
   
