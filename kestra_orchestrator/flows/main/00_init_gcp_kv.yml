@@ -19,3 +19,17 @@ tasks:
     key: GCP_DATASET
     kvType: STRING
     value: raw
+
+  - id: github_username
+    type: io.kestra.plugin.core.kv.Set
+    key: GITHUB_USERNAME
+    kvType: STRING
+    value: yoyedmundyoy
+  
+  - id: github_project_url
+    type: io.kestra.plugin.core.kv.Set
+    key: GITHUB_PROJECT_URL
+    kvType: STRING
+    value: https://github.com/yoyedmundyoy/zoomcamp-project
+
+    

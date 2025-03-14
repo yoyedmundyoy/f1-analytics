@@ -1,0 +1,13 @@
+id: utils_git_sync_flows
+namespace: zoomcamp-project
+tasks:
+  - id: sync_main_flows
+    type: io.kestra.plugin.git.SyncFlows
+    username: "{{ kv('GITHUB_USERNAME') }}"
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
+    url: "{{ kv('GITHUB_PROJECT_URL') }}" 
+    branch: main
+    targetNamespace: zoomcamp-project
+    gitDirectory: kestra_orchestrator/flows/main
+    dryRun: true
+  

@@ -1,0 +1,15 @@
+id: utils_git_push
+namespace: zoomcamp-project
+tasks:
+  - id: commit_and_push_main_flows
+    type: io.kestra.plugin.git.PushFlows
+    username: yoyedmundyoy
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
+    url: https://github.com/yoyedmundyoy/zoomcamp-project
+    branch: dev
+    sourceNamespace: zoomcamp-project 
+    targetNamespace: zoomcamp-project
+    gitDirectory: kestra_orchestrator/flows/main
+    commitMessage: "kestra pushflows"
+    dryRun: false
+  
