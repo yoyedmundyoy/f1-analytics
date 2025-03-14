@@ -6,25 +6,25 @@ tasks:
     type: io.kestra.plugin.core.kv.Set
     key: GCP_PROJECT_ID
     kvType: STRING
-    value: zoomcamp-project-452302
+    value: <your_gcp_project_id>
 
   - id: gcp_location
     type: io.kestra.plugin.core.kv.Set
     key: GCP_LOCATION
     kvType: STRING
-    value: US
+    value: <your_gcp_location>
+
+  - id: github_username
+    type: io.kestra.plugin.core.kv.Set
+    key: GITHUB_USERNAME
+    kvType: STRING
+    value: <your_githuub_username>
 
   - id: gcp_dataset
     type: io.kestra.plugin.core.kv.Set
     key: GCP_DATASET
     kvType: STRING
     value: raw
-
-  - id: github_username
-    type: io.kestra.plugin.core.kv.Set
-    key: GITHUB_USERNAME
-    kvType: STRING
-    value: yoyedmundyoy
   
   - id: github_project_url
     type: io.kestra.plugin.core.kv.Set
