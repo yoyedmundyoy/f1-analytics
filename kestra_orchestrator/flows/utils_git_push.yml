@@ -1,11 +1,11 @@
 id: utils_git_push
-namespace: zoomcamp-project
+namespace: f1-analytics
 tasks:
   - id: commit_and_push_main_flows
     type: io.kestra.plugin.git.PushFlows
     username: yoyedmundyoy
     password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
-    url: https://github.com/yoyedmundyoy/zoomcamp-project
+    url: "{{ kv('GITHUB_PROJECT_URL') }}"
     branch: dev
     sourceNamespace: f1-analytics 
     targetNamespace: f1-analytics

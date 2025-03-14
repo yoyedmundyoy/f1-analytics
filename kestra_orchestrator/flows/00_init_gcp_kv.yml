@@ -30,6 +30,6 @@ tasks:
     type: io.kestra.plugin.core.kv.Set
     key: GITHUB_PROJECT_URL
     kvType: STRING
-    value: https://github.com/yoyedmundyoy/zoomcamp-project
+    value: https://github.com/yoyedmundyoy/f1-analytics
 
     

@@ -4,35 +4,35 @@ description: Trigger a backfill for a scheduled flow
 tasks:
   - id: trigger_circuits_backfill_flow
     type: io.kestra.plugin.core.flow.Subflow
-    namespace: "zoomcamp-project"
+    namespace: "{{flow.namespace}}"
     flowId: "01-circuits-ingestion"
     wait: true
     transmitFailed: true
 
   - id: trigger_drivers_backfill_flow
     type: io.kestra.plugin.core.flow.Subflow
-    namespace: "zoomcamp-project"
+    namespace: "{{flow.namespace}}"
     flowId: "02-drivers-ingestion"
     wait: true
     transmitFailed: true
 
   - id: trigger_seasons_backfill_flow
     type: io.kestra.plugin.core.flow.Subflow
-    namespace: "zoomcamp-project"
+    namespace: "{{flow.namespace}}"
     flowId: "03-seasons-ingestion"
     wait: true
     transmitFailed: true
 
   - id: trigger_teams_backfill_flow
     type: io.kestra.plugin.core.flow.Subflow
-    namespace: "zoomcamp-project"
+    namespace: "{{flow.namespace}}"
     flowId: "04-teams-ingestion"
     wait: true
     transmitFailed: true
 
   - id: trigger_races_backfill_flow
     type: io.kestra.plugin.core.flow.Subflow
-    namespace: "zoomcamp-project"
+    namespace: "{{flow.namespace}}"
     flowId: "05-races-ingestion"
     wait: true
     transmitFailed: true
@@ -43,7 +43,7 @@ tasks:
 
   - id: trigger_results_backfill_flow
     type: io.kestra.plugin.core.flow.Subflow
-    namespace: "zoomcamp-project"
+    namespace: "{{flow.namespace}}"
     flowId: "06-results-ingestion"
     wait: true
     transmitFailed: true
@@ -54,7 +54,7 @@ tasks:
 
   - id: trigger_standings_backfill_flow
     type: io.kestra.plugin.core.flow.Subflow
-    namespace: "zoomcamp-project"
+    namespace: "{{flow.namespace}}"
     flowId: "07-standings-ingestion"
     wait: true
     transmitFailed: true
