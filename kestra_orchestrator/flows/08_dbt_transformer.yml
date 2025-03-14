@@ -1,4 +1,4 @@
-id: 07_dbt_transformer
+id: 08_dbt_transformer
 namespace: zoomcamp-project
 inputs:
   - id: dbt_command
@@ -12,7 +12,7 @@ inputs:
 tasks:
   - id: sync
     type: io.kestra.plugin.git.SyncNamespaceFiles
-    url: https://github.com/yoyedmundyoy/zoomcamp-project
+    url: " {{ kv('GITHUB_PROJECT_URL') }}"
     branch: main
     namespace: "{{flow.namespace}}"
     gitDirectory: dbt_transformer
@@ -60,3 +60,8 @@ description: |
       database: kestra-sandbox 
       schema: zoomcamp
   ```
+
+triggers:
+- id: schedule
+  type: io.kestra.plugin.core.trigger.Schedule
+  cron: "@daily"
