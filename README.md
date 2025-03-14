@@ -21,6 +21,7 @@ For this project, I used the following tools:
 
 ### Prerequisites:
 - [GCP account](https://cloud.google.com/) with credits
+- Github Access Token
 - Docker
 - Docker Compose
 
@@ -41,7 +42,7 @@ Ensure you have Docker and Docker Compose installed on your machine. Then, build
 ```
 cd kestra_orchestrator
 ```
-Then, add your github access token to the docker-compose.yml file:
+Then, add your github access token to the docker-compose.yml file (see [here](https://youtu.be/OPlNKQZFeho?t=82) on how to get your github access token):
 ```
 environment:
       SECRET_GITHUB_ACCESS_TOKEN: <your_github_token>
@@ -73,6 +74,13 @@ This is a one time backfill run that is needed to backfill historical data from 
 This will run the dbt models in ```dbt_transformer/models``` and output them to Google Bigquery which can then be used for analysis and building the dashboard.
 This is a one time manual run to get an immediate output, otherwise, this is scheduled to run on a daily interval.
 
+## Step 7: Creating / viewing the dashboard 
+To create your own dashboard:
+* Go to [Google Data Studio](https://datastudio.google.com) 
+* Click `Create` > `Data Source`
+* Select `BigQuery` > Your Project ID > Dataset > Table
+* Click on `Connect` on the top-right and you should be able to use the imported data to create your dashboard!
 
+Below is a screenshot of my [dashboard](https://datastudio.google.com/).
 
-Thank you again to everyone for their dedication and support! If you have any questions, please feel free to open a PR or send me an email. Bless!
+Thank you! If you have any questions, please feel free to open a PR or send me an email.
