@@ -27,8 +27,8 @@ For this project, I used the following tools:
 
 ### Step 1: Clone the Repository
 ```
-git clone https://github.com/yoyedmundyoy/zoomcamp-project.git
-cd zoomcamp-project
+git clone https://github.com/yoyedmundyoy/f1-analytics.git
+cd f1-analytics
 ```
 
 ### Step 2: Set Up Google Cloud
@@ -78,7 +78,11 @@ Then, open and execute the ```00_trigger_backfill``` flow
 This will trigger a backfill for all flows 01 - 07 and load the raw dlt load data into Google Bigquery tables.
 This is a one time backfill run that is needed to backfill historical data from the API. The Kestra flows created are then scheduled to run at a set interval to load data automatically into Bigquery. 
 
-## Step 6: Running dbt 
+## Step 6: Running dbt
+Update ```dbt_transformer/models/staging/schema.yml``` and add your project_id
+```
+database: <your_gcp_project_id>
+```
 1. In kestra, click and open the ```08_dbt_transformer``` flow
 
 This will run the dbt models in ```dbt_transformer/models``` and output them to Google Bigquery which can then be used for analysis and building the dashboard.
