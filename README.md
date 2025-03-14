@@ -3,7 +3,7 @@
 This project is done for the Data Engineering Zoomcamp Final Capstone Project
 
 # Problem Description
-The goal of this project is to track historical Formula 1 data. The source I found is presented as an API (source: [F1 API](https://f1api.dev/)). The dataset includes data regarding races, drivers, teams, circuits and standings.
+The goal of this project is to track historical Formula 1 data. The source I found is presented as an API (source: [F1 API](https://f1api.dev/)). The dataset includes data regarding races, drivers, teams, circuits and standings. We seek to transform these disconnected data sources into a robust dimensional model with clear fact and dimension tables, enabling analysis of driver and team performance, historical trends, and race strategies through interactive dashboards that will give deeper insights into Formula 1 racing.
 
 # Technologies
 For this project, I used the following tools:
