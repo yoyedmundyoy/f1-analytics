@@ -52,7 +52,8 @@ environment:
 docker-compose up -d
 ```
 
-### Step 4: Set up Kestra flows
+### Step 4: Set up Kestra flows 
+Open Kestra UI on port 8080
 1. Copy the code from ```/kestra_orchestrator/flows/00_init_gcp_kv.yml```
 2. In kestra, click on 'Flows' and 'Create' to create a new flow
 3. Paste in the code, and change the values to your credentials
@@ -63,7 +64,16 @@ docker-compose up -d
 8. Click 'Execute' to sync the flows from the git repository to your kestra flows
 
 ### Step 5: Executing dlt ingestion backfills
-1. In kestra, click and open the ```00_trigger_backfill``` flow
+Add your service account credentials to the Key-Value store in Kestra:
+1. Click on 'Namespaces'
+2. Click on 'f1-analytics'
+3. Click 'KV Store'
+4. Click 'New Key-Value
+5. Key: GCP_CREDS
+6. Copy and paste the entire contents of the service account json key file into the value
+7. Click 'Save'
+
+Then, open and execute the ```00_trigger_backfill``` flow
 
 This will trigger a backfill for all flows 01 - 07 and load the raw dlt load data into Google Bigquery tables.
 This is a one time backfill run that is needed to backfill historical data from the API. The Kestra flows created are then scheduled to run at a set interval to load data automatically into Bigquery. 
