@@ -1,5 +1,5 @@
 id: 03-seasons-ingestion
-namespace: zoomcamp-project
+namespace: f1-analytics
 description: Ingest seasons data, scheduled to run every month
 
 tasks:

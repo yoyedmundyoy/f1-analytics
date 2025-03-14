@@ -1,5 +1,5 @@
 id: 00_trigger_backfill
-namespace: zoomcamp-project
+namespace: f1-analytics
 description: Trigger a backfill for a scheduled flow
 tasks:
   - id: trigger_circuits_backfill_flow

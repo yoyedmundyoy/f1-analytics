@@ -1,5 +1,5 @@
 id: 04-teams-ingestion
-namespace: zoomcamp-project
+namespace: f1-analytics
 description: Ingest teams data, scheduled to run once every month
 
 tasks:

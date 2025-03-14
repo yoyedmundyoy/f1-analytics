@@ -7,7 +7,7 @@ tasks:
     password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
     url: "{{ kv('GITHUB_PROJECT_URL') }}" 
     branch: main
-    targetNamespace: zoomcamp-project
-    gitDirectory: kestra_orchestrator/flows/main
-    dryRun: true
+    targetNamespace: f1-analytics
+    gitDirectory: kestra_orchestrator/flows
+    dryRun: false
   

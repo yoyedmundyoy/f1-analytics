@@ -1,5 +1,5 @@
 id: 02-drivers-ingestion
-namespace: zoomcamp-project
+namespace: f1-analytics
 description: Ingest drivers data, scheduled to run once a month on day 1 of every month
 
 tasks:

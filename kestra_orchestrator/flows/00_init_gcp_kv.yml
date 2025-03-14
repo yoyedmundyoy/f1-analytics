@@ -1,5 +1,5 @@
 id: 00_init_gcp_kv
-namespace: zoomcamp-project
+namespace: f1-analytics
 
 tasks:
   - id: gcp_project_id

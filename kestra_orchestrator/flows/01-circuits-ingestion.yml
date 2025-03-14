@@ -1,5 +1,5 @@
 id: 01-circuits-ingestion
-namespace: zoomcamp-project
+namespace: f1-analytics
 description: Ingest circuits data, scheduled to run once every 3 months
 
 tasks:

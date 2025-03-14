@@ -1,5 +1,5 @@
 id: 05-races-ingestion
-namespace: zoomcamp-project
+namespace: f1-analytics
 description: Ingest races data by year, scheduled to run every month on the first day of each month
 
 inputs:

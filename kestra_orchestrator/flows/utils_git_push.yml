@@ -7,8 +7,8 @@ tasks:
     password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
     url: https://github.com/yoyedmundyoy/zoomcamp-project
     branch: dev
-    sourceNamespace: zoomcamp-project 
-    targetNamespace: zoomcamp-project
+    sourceNamespace: f1-analytics 
+    targetNamespace: f1-analytics
     gitDirectory: kestra_orchestrator/flows
     commitMessage: "kestra pushflows"
     dryRun: false

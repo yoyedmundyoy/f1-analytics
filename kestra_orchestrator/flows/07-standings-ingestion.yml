@@ -1,5 +1,5 @@
 id: 07-standings-ingestion
-namespace: zoomcamp-project
+namespace: f1-analytics
 description: Ingest standings data by year, scheduled to run once every week
 
 

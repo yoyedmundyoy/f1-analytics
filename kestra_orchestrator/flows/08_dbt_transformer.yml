@@ -1,5 +1,5 @@
 id: 08_dbt_transformer
-namespace: zoomcamp-project
+namespace: f1-analytics
 inputs:
   - id: dbt_command
     type: SELECT
@@ -12,7 +12,7 @@ inputs:
 tasks:
   - id: sync
     type: io.kestra.plugin.git.SyncNamespaceFiles
-    url: " {{ kv('GITHUB_PROJECT_URL') }}"
+    url: "{{ kv('GITHUB_PROJECT_URL') }}"
     branch: main
     namespace: "{{flow.namespace}}"
     gitDirectory: dbt_transformer
