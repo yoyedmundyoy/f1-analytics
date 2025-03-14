@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    database: zoomcamp-project-452302  
+    database: <your_gcp_project_id>  
     schema: raw  
     tables:
       - name: drivers
