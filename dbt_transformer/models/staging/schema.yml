@@ -6,3 +6,15 @@ sources:
     schema: raw  
     tables:
       - name: drivers
+      - name: teams
+      - name: circuits
+      - name: seasons
+      - name: races
+      - name: fp1_results
+      - name: fp2_results
+      - name: fp3_results
+      - name: qualy_results
+      - name: sprint_qualy_results
+      - name: sprint_race_results
+      - name: race_results
+      - name: constructors_standings
