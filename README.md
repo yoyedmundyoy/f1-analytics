@@ -95,6 +95,7 @@ To create your own dashboard:
 * Select `BigQuery` > Your Project ID > Dataset > Table
 * Click on `Connect` on the top-right and you should be able to use the imported data to create your dashboard!
 
-Below is a screenshot of my [dashboard](https://datastudio.google.com/).
+Below is a screenshot of my [dashboard](https://datastudio.google.com/](https://lookerstudio.google.com/reporting/44e67a36-8804-4652-a4dd-c70467919928)).
+![image](https://github.com/user-attachments/assets/475e8931-b8c4-4d47-9fa4-e0b44416f62d)
 
 Thank you! If you have any questions, please feel free to open a PR or send me an email.
