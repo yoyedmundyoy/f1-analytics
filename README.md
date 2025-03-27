@@ -10,9 +10,9 @@ For this project, I used the following tools:
 * Google Cloud Platform (GCP) - main cloud provider
 * BigQuery - cloud data warehouse
 * Python - main programming language
+* dlt - open source Python library for data loading
 * Docker - containerization (docker-compose)
 * Kestra - orchestration tool for pipeline
-* Terraform - Infrastructure-as-Code (IaC) tool
 * Google Data Studio - data visualizations
 
 ## Project Structure
